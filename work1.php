@@ -60,6 +60,4 @@ class bigDataBandWidth
 		echo "IP: ".$this->logIp." bandwidth: $statistics \n";
 	}
 }
-
-// 178.154.179.250  2705410389
 ?>
