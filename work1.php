@@ -42,20 +42,48 @@ class bigDataBandWidth
 	public function parseLogs()
 	{
 		$statistics = 0;		
+		$statisticsList = array();
+		$statisticsTotals = array();
 		foreach ($this->logFiles as $logFile)
 		{
-			$fileStatistics = 0;
+			$fileStatistics = array();
 			$buffer_size = 4096; // read 4kb at a time
 			$file = gzopen($this->logPath."/".$logFile, 'rb'); 
 			while(!gzeof($file)) {
 				$read = gzread($file, $buffer_size);
-				if (preg_match("/".$this->logIp."\s-\s-\s\[.+]\s\".+HTTP\/1.1\"\s(200)\s(\d+)/", $read, $results))
+				//if (preg_match("/".$this->logIp."\s-\s-\s\[.+]\s\".+HTTP\/1.1\"\s(200)\s(\d+)/", $read, $results))
+				if (preg_match("/".$this->logIp."\s-\s-\s\[.+]\s\".+HTTP\/1.1\"\s(\d+)\s(\d+)/", $read, $results))
 				{	
-					$fileStatistics += $results[2]; 										
+					if ($logFile === "Site0-access.log")
+					{
+						var_export($results);
+					}
+					//var_export($results);
+					if (isset($fileStatistics[$results[1]])) $fileStatistics[$results[1]] += $results[2];
+					else $fileStatistics[$results[1]] = $results[2];
+					if (isset($statisticsTotals[$results[1]])) $statisticsTotals[$results[1]] += $results[2];
+					else $statisticsTotals[$results[1]] = $results[2];
 				}
 			}
-			$statistics += $fileStatistics;
+			/*foreach ($fileStatistics as $status => $stat)
+			{
+				if (isset($statisticsList[$status])) $statisticsList[$status] += $stat;
+				else $statisticsList[$status] = $stat;
+			}*/
+			//$statistics += $fileStatistics;			
+			$statisticsList[$logFile] = $fileStatistics;
 			gzclose($file);
+		}
+
+		var_export($statisticsList);
+		
+		ksort($statisticsTotals);
+		foreach ($statisticsTotals as $key => $stat)
+		{
+			$statistics += $stat;
+			
+			echo "code: $key: $stat\n";
+			
 		}
 		echo "IP: ".$this->logIp." bandwidth: $statistics \n";
 	}
